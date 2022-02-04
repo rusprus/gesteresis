@@ -9,6 +9,7 @@ using namespace std;
 int ba(0);
 int y(0);
 int oldY(0);
+int maxY(0);
 int rdv(0);
 int rmv(0);
 bool state(false);
@@ -23,9 +24,10 @@ void timerProc() {
           if( ( time(0) - startTime ) > rdv  ){
               state = !state;
               timerOn = false;
+
               cout<<endl;
               cout<<"Значение выше ВА: "<< state << endl;
-              cout<<"Время срабатывания: "<< time(0) -  startTime   << endl;
+//              cout<<"Время срабатывания: "<< time(0) -  startTime   << endl;
           }
       }
       std::this_thread::sleep_for(std::chrono::nanoseconds(1000000000));
@@ -39,6 +41,7 @@ void mainProc(){
 
         cout << "Входное значение Y: ";
         oldY = y;
+        maxY = y > maxY ? y : maxY;
         cin >> y ;
 
         // 1 случай: предыдущий Y ниже уставки
@@ -53,7 +56,7 @@ void mainProc(){
         }
 
         // 2 случай: предыдущий Y выше уставки + RMV
-        if(state  && ( oldY > ba+rmv )){
+        if(state  && ( maxY > ba+rmv )){
             // Текущий сигнал выше уставки.
              if( y > ba  ){
                 // Ничего не делаем
@@ -62,12 +65,13 @@ void mainProc(){
              if( (y < ba) && !timerOn){
                 timerOn = true;
                 startTime = time(0);
+                maxY = 0;
                 cout<<"-->Второй случай: "<< endl;
              }
         }
 
         // 3 случай: предыдущий Y выше уставки,но ниже (уставка + RMV)
-        if(state  && ( oldY < ba+rmv ) && ( oldY > ba )){
+        if(state  && ( maxY < ba+rmv ) && ( maxY > ba )){
             // Текущий сигнал выше уставки.
              if( y > ba  ){
                 // Ничего не делаем
@@ -77,6 +81,7 @@ void mainProc(){
              if( (y < ba - rmv) && !timerOn){
                 timerOn = true;
                 startTime = time(0);
+                maxY = 0;
                 cout<<"-->Третий случай: "<< endl;
              }
         }
